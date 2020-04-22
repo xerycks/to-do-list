@@ -1,0 +1,11 @@
+{
+  "name": "to-do-list-v1",
+  "version": "1.0.0",
+  "description": "a simple to-do-list",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "xerycks",
+  "license": "ISC"
+}

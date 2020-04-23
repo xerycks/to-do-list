@@ -1,34 +1,59 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const bodyParser = require("body-parser");
 
 const app = express();
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+);
 
-app.set('view engine', 'ejs');
+var items = [];
+let workItems = [];
 
-app.use(bodyParser.urlencoded({
-    extended: true
-}))
+app.set("view engine", "ejs");
 
-app.get('/', function (req, res) {
-    var date = new Date();
-    var day = date.getDay();
-    const dayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    var today = "";
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+);
 
-    res.render('index', {
-        theDay: dayName[day]
-    })
+app.use(express.static("public"));
 
-    // if (day === 0 || day === 6) {
-    //     today = "weekend";
-    //     res.send("hey ba");
-    // } else {
-    //     today = "weekday";
-    //     res.render("index", {
-    //         theDay: today
-    //     });
-    // }
-})
+app.get("/", function (req, res) {
+  var date = new Date();
 
+  var options = {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  };
 
-app.listen(3000, () => console.log(`Example app listening on port 3000!`))
+  var today = date.toLocaleDateString("en-Us", options);
+
+  res.render("index", {
+    listTitle: today,
+    newListItem: items,
+  });
+});
+
+app.get("/work", function (req, res) {
+  res.render("index", {
+    listTitle: "work",
+    newListItem: workItems,
+  });
+});
+
+app.post("/", function (req, res) {
+  var item = req.body.newItem;
+  if (req.body.list === "work ") {
+    workItems.push(item);
+    res.redirect("/work");
+  } else {
+    items.push(item);
+    res.redirect("/");
+  }
+});
+
+app.listen(3000, () => console.log(`Example app listening on port 3000!`));

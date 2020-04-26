@@ -35,15 +35,15 @@ const newList = mongoose.model("newList", newListSchema);
 const Item = mongoose.model("item", listSchema);
 
 const i1 = new Item({
-  item: "item 1",
+  item: "simple to do list",
 });
 
 const i2 = new Item({
-  item: "item 2",
+  item: "<-- delete any item by clicking here",
 });
 
 const i3 = new Item({
-  item: "item 3",
+  item: "create a separate list by going nayilist.herokuapp.com/<yourCustomListName>",
 });
 
 const defaultItems = [i1, i2, i3];

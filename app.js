@@ -1,53 +1,149 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const newDate = require(__dirname + "/date.js")
+const newDate = require(__dirname + "/date.js");
+const mongoose = require("mongoose");
+const lodash = require("lodash");
 
 const app = express();
 app.use(
-    bodyParser.urlencoded({
-        extended: true,
-    })
+  bodyParser.urlencoded({
+    extended: true,
+  })
 );
-
-var items = [];
-let workItems = [];
 
 app.set("view engine", "ejs");
 
-app.use(
-    bodyParser.urlencoded({
-        extended: true,
-    })
-);
-
 app.use(express.static("public"));
 
-app.get("/", function (req, res) {
-    var today = newDate.newDate();
-    res.render("index", {
-        listTitle: today,
-        newListItem: items,
-    });
+mongoose.connect(
+  "mongodb+srv://xerycks:12345678qwe@cluster0-cnzva.mongodb.net/listDB",
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
+);
+
+const listSchema = mongoose.Schema({
+  item: String,
 });
 
-app.get("/work", function (req, res) {
-    res.render("index", {
-        listTitle: "work",
-        newListItem: workItems,
-    });
+const newListSchema = {
+  name: String,
+  items: [listSchema],
+};
+
+const newList = mongoose.model("newList", newListSchema);
+
+const Item = mongoose.model("item", listSchema);
+
+const i1 = new Item({
+  item: "item 1",
+});
+
+const i2 = new Item({
+  item: "item 2",
+});
+
+const i3 = new Item({
+  item: "item 3",
+});
+
+const defaultItems = [i1, i2, i3];
+
+app.get("/", function (req, res) {
+  Item.find({}, function (err, i) {
+    if (i.length === 0) {
+      Item.insertMany(defaultItems, function (err) {
+        if (err) {
+          console.log("atka");
+        } else {
+          console.log("insert ho gaya !!");
+        }
+      });
+      res.redirect("/");
+    } else {
+      res.render("index", {
+        listTitle: "today",
+        newListItem: i,
+      });
+    }
+  });
 });
 
 app.post("/", function (req, res) {
-    var item = req.body.newItem;
-    if (req.body.list === "work ") {
-        workItems.push(item);
-        res.redirect("/work");
+  var itemName = req.body.newItem;
+  var listName = req.body.btn;
+
+  const i = new Item({
+    item: itemName,
+  });
+
+  if (listName === "today") {
+    i.save();
+    res.redirect("/");
+  } else {
+    newList.findOne({ name: listName }, function (err, result) {
+      result.items.push(i);
+      result.save();
+
+      res.redirect("/" + listName);
+    });
+  }
+});
+
+app.post("/delete", function (req, res) {
+  var check_id = req.body.check;
+  var listName2 = req.body.checkList;
+
+  if (listName2 === "today") {
+    Item.findByIdAndDelete(
+      {
+        _id: check_id,
+      },
+      function (err) {}
+    );
+
+    res.redirect("/");
+  } else {
+    newList.findOneAndUpdate(
+      { name: listName2 },
+      { $pull: { items: { _id: check_id } } },
+      function (err, result) {
+        if (!err) {
+          res.redirect("/" + listName2);
+        }
+      }
+    );
+  }
+});
+
+app.get("/:newListTitle", function (req, res) {
+  var newListName = lodash.startCase(req.params.newListTitle);
+
+  newList.findOne({ name: newListName }, function (err, result) {
+    if (!err) {
+      if (result) {
+        res.render("index", {
+          listTitle: newListName,
+          newListItem: result.items,
+        });
+      } else {
+        const nayiList = new newList({
+          name: newListName,
+          items: defaultItems,
+        });
+
+        nayiList.save();
+
+        res.redirect("/" + newListName);
+      }
     } else {
-        items.push(item);
-        res.redirect("/");
     }
+  });
 });
 
 app.get("/about", (req, res) => res.render("about"));
 
-app.listen(3000, () => console.log(`Example app listening on port 3000!`));
+app.listen(process.env.PORT || 5000, () =>
+  console.log(`Example app listening on port 3000!`)
+);

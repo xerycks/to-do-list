@@ -1,6 +1,5 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const newDate = require(__dirname + "/date.js");
 const mongoose = require("mongoose");
 const lodash = require("lodash");
 
@@ -16,8 +15,7 @@ app.set("view engine", "ejs");
 app.use(express.static("public"));
 
 mongoose.connect(
-  "mongodb+srv://xerycks:12345678qwe@cluster0-cnzva.mongodb.net/listDB",
-  {
+  "mongodb+srv://xerycks:12345678qwe@cluster0-cnzva.mongodb.net/listDB", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   }
@@ -82,7 +80,9 @@ app.post("/", function (req, res) {
     i.save();
     res.redirect("/");
   } else {
-    newList.findOne({ name: listName }, function (err, result) {
+    newList.findOne({
+      name: listName
+    }, function (err, result) {
       result.items.push(i);
       result.save();
 
@@ -96,8 +96,7 @@ app.post("/delete", function (req, res) {
   var listName2 = req.body.checkList;
 
   if (listName2 === "today") {
-    Item.findByIdAndDelete(
-      {
+    Item.findByIdAndDelete({
         _id: check_id,
       },
       function (err) {}
@@ -105,9 +104,15 @@ app.post("/delete", function (req, res) {
 
     res.redirect("/");
   } else {
-    newList.findOneAndUpdate(
-      { name: listName2 },
-      { $pull: { items: { _id: check_id } } },
+    newList.findOneAndUpdate({
+        name: listName2
+      }, {
+        $pull: {
+          items: {
+            _id: check_id
+          }
+        }
+      },
       function (err, result) {
         if (!err) {
           res.redirect("/" + listName2);
@@ -120,7 +125,9 @@ app.post("/delete", function (req, res) {
 app.get("/:newListTitle", function (req, res) {
   var newListName = lodash.startCase(req.params.newListTitle);
 
-  newList.findOne({ name: newListName }, function (err, result) {
+  newList.findOne({
+    name: newListName
+  }, function (err, result) {
     if (!err) {
       if (result) {
         res.render("index", {
@@ -137,8 +144,7 @@ app.get("/:newListTitle", function (req, res) {
 
         res.redirect("/" + newListName);
       }
-    } else {
-    }
+    } else {}
   });
 });
 

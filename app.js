@@ -43,7 +43,7 @@ const i2 = new Item({
 });
 
 const i3 = new Item({
-  item: "create a separate list by going nayilist.herokuapp.com/<yourCustomListName>",
+  item: "create a separate<br>nayilist.herokuapp.com/<yourCustomListName>",
 });
 
 const defaultItems = [i1, i2, i3];
